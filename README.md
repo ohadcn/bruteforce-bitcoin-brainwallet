@@ -16,18 +16,20 @@ pip install -r requirements.txt
 #Usage
 ```
 usage: bbb.py [-h] -t TYPE -d DICT_FILE -o OUTPUT_FILE [-s SERVER] [-p PORT]
-              [-c CHAIN] [--version]
+              [-c CHAIN] [-k] [--version]
 
 A script to perform bruteforce dictionary attacks on brainwallets.
 
 optional arguments:
   -h, --help      show this help message and exit
-  -t TYPE         Blockchain lookup type (abe|blockchaininfo|insight)
+  -t TYPE         Blockchain lookup type (abe|blockchaininfo|insight|blockexplorercom)
   -d DICT_FILE    Dictionary file (e.g. dictionary.txt)
   -o OUTPUT_FILE  Output file (e.g. output.txt)
-  -s SERVER       Abe host address (e.g. localhost)
+  -s SERVER       Abe server address (e.g. localhost)
   -p PORT         Abe port (e.g. 2751)
   -c CHAIN        Abe chain string (e.g. Bitcoin)
+  -k              treat each word as a hex or wif encoded private key, not as
+                  brain wallet
   --version       show program's version number and exit
 ```
 
