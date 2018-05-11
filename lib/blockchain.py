@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 import requests
 import logging
 import time
-
+from lib.addressset import AddressSet
+from pybitcointools import b58check_to_bin
 
 class BaseBlockExplorer(object):
     __metaclass__ = ABCMeta
@@ -213,3 +214,21 @@ class Insight(BaseBlockExplorer):
         except Exception as e:
             raise
         return btc_received
+
+class AddressSetExplorer(BaseBlockExplorer):
+    STRING_TYPE="ADDRESS_SET"
+
+    def __init__(self, *args, **kwargs):
+        self.set = AddressSet.fromfile(open("addresses.db", "rb"))
+
+    def open_session(self):
+        pass
+
+    def close_session(self):
+        pass
+
+    def get_received(self, public_address):
+        return 1 if b58check_to_bin(public_address) in self.set else 0
+
+    def get_balance(self, public_address):
+        return 1 if b58check_to_bin(public_address) in self.set else 0

@@ -4,15 +4,15 @@ import sys
 import argparse
 import logging
 import time
-from lib.blockchain import Abe, BlockchainInfo, Insight, BlockExplorerCom
+from lib.blockchain import Abe, BlockchainInfo, Insight, BlockExplorerCom, AddressSetExplorer
 from lib.wallet import Wallet
 
 def main():
     # Script argument parsing
     parser = argparse.ArgumentParser(description='A script to perform bruteforce dictionary attacks on brainwallets.')
     parser.add_argument('-t', action='store', dest='type',
-                        help='Blockchain lookup type ({}|{}|{})'
-                        .format(Abe.STRING_TYPE, BlockchainInfo.STRING_TYPE, Insight.STRING_TYPE, BlockExplorerCom.STRING_TYPE), required=True)
+                        help='Blockchain lookup type ({}|{}|{}|{})'
+                        .format(Abe.STRING_TYPE, BlockchainInfo.STRING_TYPE, Insight.STRING_TYPE, BlockExplorerCom.STRING_TYPE,AddressSetExplorer.STRING_TYPE), required=True)
     parser.add_argument('-d', action='store', dest='dict_file',
                         help='Dictionary file (e.g. dictionary.txt)', required=True)
     parser.add_argument('-o', action='store', dest='output_file',
@@ -23,8 +23,8 @@ def main():
                         help='Abe port (e.g. 2751)')
     parser.add_argument('-c', action='store', dest='chain',
                         help='Abe chain string (e.g. Bitcoin)')
-    parser.add_argument('-k', action='store_true', dest='is_private_key', default=False,
-                        help='treat each word as a hex or wif encoded private key, not as brain wallet')
+    parser.add_argument('-k', action='store', dest='is_private_key', default=0,
+                        help='0 - treat as passphrase, 1 - treat as private key, 2- treat as old electrum passphrase')
     parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     args = parser.parse_args()
 
@@ -33,7 +33,7 @@ def main():
                         format='%(asctime)s %(levelname)-6s line %(lineno)-4s %(message)s')
 
     # Check valid blockchain lookup type is specified
-    if args.type != BlockchainInfo.STRING_TYPE and args.type != Abe.STRING_TYPE and args.type != Insight.STRING_TYPE and args.type != BlockExplorerCom.STRING_TYPE:
+    if args.type != BlockchainInfo.STRING_TYPE and args.type != Abe.STRING_TYPE and args.type != Insight.STRING_TYPE and args.type != BlockExplorerCom.STRING_TYPE and args.type != AddressSetExplorer.STRING_TYPE:
         logging.error("Invalid -t option specified.")
         sys.exit(1)
 
@@ -58,6 +58,8 @@ def main():
         blockexplorer = Insight()
     elif args.type == BlockExplorerCom.STRING_TYPE:
         blockexplorer = BlockExplorerCom()
+    elif args.type == AddressSetExplorer.STRING_TYPE:
+        blockexplorer = AddressSetExplorer()
     else:
         logging.error("Invalid lookup type specified '{}'".format(args.type))
         sys.exit(1)
