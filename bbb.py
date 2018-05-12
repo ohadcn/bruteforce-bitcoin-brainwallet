@@ -26,10 +26,12 @@ def main():
                         help='Abe chain string (e.g. Bitcoin)')
     parser.add_argument('-k', action='store', dest='is_private_key', default=0,
                         help='0 - treat as passphrase, 1 - treat as private key, 2- treat as old electrum passphrase')
-    parser.add_argument('-c', action='store_true', dest='capitalize', default=False,
+    parser.add_argument('-C', action='store_true', dest='capitalize', default=False,
                         help='capitalize each word')
     parser.add_argument('-u', action='store_true', dest='uppercase', default=False,
                         help='uppercase each word')
+    parser.add_argument('-a', action='store_true', dest='append', default=False,
+                        help='append found file')
     parser.add_argument('-rpc', action='store', dest='rpc', default=None,
                         help='auto add found keys to your wallet using rpc url (e,g: http://myuser:mypassword@localhost:8332/)')
     parser.add_argument('--version', action='version', version='%(prog)s 1.1')
@@ -102,9 +104,10 @@ def main():
     file_header = 'dictionary word, received bitcoins, wallet address, private address, current balance'
     logging.info("Opening output file {} for writing".format(args.output_file))
     try:
-        f_found_addresses = codecs.open(args.output_file, 'w', dictionary_encoding)
+        f_found_addresses = codecs.open(args.output_file, 'a' if args.append else 'w', dictionary_encoding)
         logging.info(file_header)
-        f_found_addresses.writelines(file_header + '\n')
+        if not args.append:
+            f_found_addresses.writelines(file_header + '\n')
     except Exception as e:
         logging.error("Failed to open output file {}. Error: {}".format(args.found_file, e.args))
         sys.exit(1)
@@ -187,7 +190,7 @@ def main():
         try:
             res = post(args.rpc, json={'method': "importprivkey", 'params': [Wallet(None).wif, "brute", False]})
             if res.status_code != 200:
-                print("import private key for reload failed: " + res.text)
+                logging.error("import private key for reload failed: " + res.text)
         except Exception as e:
             logging.error('rpc failed: ' + str(e))
 
