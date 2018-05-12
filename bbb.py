@@ -77,6 +77,11 @@ def main():
     logging.info("Opening session for {}".format(args.type))
     blockexplorer.open_session()
 
+    if args.capitalize:
+        logging.info('capitalizing...')
+    if args.uppercase:
+        logging.info('uppercasing...')
+        
     # Open dictionary file and validate encoding
     dictionary_encoding = "utf-8"
     logging.info("Opening dictionary file {} and validating encoding is {}".format(args.dict_file, dictionary_encoding))
@@ -115,12 +120,12 @@ def main():
     # Loop through dictionary
     for raw_word in f_dictionary:
         dictionary_word = raw_word.rstrip()
+        if not dictionary_word:
+            continue
         if args.capitalize:
             dictionary_word = dictionary_word.capitalize()
         elif args.uppercase:
             dictionary_word = dictionary_word.upper()
-        if not dictionary_word:
-            continue
 
         # Print each word since this is rate limited
         if args.type == BlockchainInfo.STRING_TYPE:
@@ -130,6 +135,7 @@ def main():
         try:
             wallet = Wallet(dictionary_word, args.is_private_key)
         except Exception as e:
+            logging.error("failed to generate key " + str(e) + " " + dictionary_word)
             continue
 
         # Get received bitcoins
@@ -188,7 +194,7 @@ def main():
     if args.rpc:
         logging.info("force reload of the wallet by importing new address in")
         try:
-            res = post(args.rpc, json={'method': "importprivkey", 'params': [Wallet(None).wif, "brute", False]})
+            res = post(args.rpc, json={'method': "importprivkey", 'params': [Wallet().wif, "brute", False]})
             if res.status_code != 200:
                 logging.error("import private key for reload failed: " + res.text)
         except Exception as e:
