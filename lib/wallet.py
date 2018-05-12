@@ -4,15 +4,15 @@ import logging
 
 
 class Wallet:
-    def __init__(self, passphrase, is_private_key = 0):
+    def __init__(self, passphrase, type = 0):
         self.passphrase = passphrase
         self.address = None
         self.public_key = None
         self.private_key = None
         try:
-            if is_private_key == 1:
+            if type == 1:
                 keypair = BitcoinKeypair.from_private_key(self.passphrase.encode('ascii'))
-            elif is_private_key == 2:
+            elif type == 2:
                 keypair = BitcoinKeypair.from_private_key(deterministic.electrum_stretch(self.passphrase))
             else:
                 keypair = BitcoinKeypair.from_passphrase(self.passphrase)
