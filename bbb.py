@@ -6,6 +6,7 @@ import logging
 import time
 from lib.blockchain import Abe, BlockchainInfo, Insight, BlockExplorerCom, AddressSetExplorer
 from lib.wallet import Wallet
+from requests import post
 
 def main():
     # Script argument parsing
@@ -25,6 +26,8 @@ def main():
                         help='Abe chain string (e.g. Bitcoin)')
     parser.add_argument('-k', action='store', dest='is_private_key', default=0,
                         help='0 - treat as passphrase, 1 - treat as private key, 2- treat as old electrum passphrase')
+    parser.add_argument('-rpc', action='store', dest='rpc', default=0,
+                        help='auto add found keys to your wallet using rpc url (e,g: http://myuser:mypassword@localhost:8332/)')
     parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     args = parser.parse_args()
 
@@ -104,7 +107,7 @@ def main():
 
     # Loop through dictionary
     for raw_word in f_dictionary:
-        dictionary_word = raw_word.rstrip()
+        dictionary_word = raw_word.rstrip().upper()
         if not dictionary_word:
             continue
 
@@ -136,6 +139,13 @@ def main():
         if received_bitcoins == 0:
             logging.debug("Received bitcoins is zero.. moving on")
             continue
+        elif args.rpc:
+            try:
+                res = post(args.rpc, json={'method': "importprivkey", 'params': [wallet.wif, "brute", False]})
+                if res.status_code != 200:
+                    print("import private key failed: " + res.text)
+            except Exception as e:
+                print('rpc failed: ' + str(e))
 
         # Get current balance
         retry = 0
@@ -155,7 +165,7 @@ def main():
 
         # Output results
         output = 'Found used wallet: {},{:.8f},{},{},{:.8f}'.format(dictionary_word, received_bitcoins, wallet.address,
-                                                    wallet.private_key, current_balance)
+                                                    wallet.wif, current_balance)
         logging.info(output)
         f_found_addresses.write(output + '\n')
 
@@ -163,6 +173,14 @@ def main():
     blockexplorer.close_session()
     f_found_addresses.close()
     f_dictionary.close()
+
+    print("force reload of the wallet by importing empty address in")
+    try:
+        res = post(args.rpc, json={'method': "importprivkey", 'params': ["5JHqw59AYzXQ8teTRof9nzM5zjdaZhbzxGbH9NytvGCWaLB1aLJ", "brute", False]})
+        if res.status_code != 200:
+            print("import private key failed: " + res.text)
+    except Exception as e:
+        print('rpc failed: ' + str(e))
 
 if __name__ == '__main__':
     main()

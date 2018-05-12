@@ -19,6 +19,7 @@ class Wallet:
             self.address = keypair.address()
             self.public_key = keypair.public_key()
             self.private_key = keypair.private_key()
+            self.wif = keypair.wif_pk()
         except Exception as e:
             logging.warning(u"Failed to generate keypair for passphrase '{}'. Error: {}".format(passphrase, e.args))
             raise
